@@ -29,12 +29,12 @@ services:
       - OLLAMA_BASE_URL=http://ollama:11434
       - OPENAI_API_BASE=http://ollama:11434/v1
       - OPENAI_API_KEY=dummy
-      - WEBUI_AUTH=true
-      - ENABLE_SIGNUP=false
+      - WEBUI_AUTH=false
+      - ENABLE_SIGNUP=true
       - SINGLE_USER_MODE=true
       - DEFAULT_ADMIN_USERNAME=${WEBUI_ADMIN_USER}
       - DEFAULT_ADMIN_PASSWORD=${WEBUI_ADMIN_PASS}
-      - WEBUI_NAME=Local WebUI
+      - WEBUI_NAME=Birge WebUI
     volumes:
       - ./openwebui:/app/backend/data
     restart: unless-stopped
@@ -54,4 +54,3 @@ services:
 networks:
   default:
     name: local-llm-net
-
