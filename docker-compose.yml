@@ -1,0 +1,57 @@
+version: "3.9"
+
+services:
+  ollama:
+    image: ollama/ollama:latest
+    container_name: ollama
+    ports:
+      - "11434:11434"                 # OpenAI-compatible API: http://localhost:11434/v1/...
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+      # The following two are optional when using `gpus: all`, but harmless:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=compute,utility
+      # Keep models warm for interactive use (default ~5m). Tweak to taste:
+      - OLLAMA_KEEP_ALIVE=10m
+    volumes:
+      - ./ollama:/root/.ollama        # models + state (lives on your Windows filesystem)
+    gpus: all                          # <-- enable NVIDIA GPU in Compose
+    restart: unless-stopped
+
+  openwebui:
+    image: ghcr.io/open-webui/open-webui:main
+    container_name: openwebui
+    depends_on:
+      - ollama
+    ports:
+      - "3000:8080"                   # Web UI: http://localhost:3000
+    environment:
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OPENAI_API_BASE=http://ollama:11434/v1
+      - OPENAI_API_KEY=dummy
+      - WEBUI_AUTH=true
+      - ENABLE_SIGNUP=false
+      - SINGLE_USER_MODE=true
+      - DEFAULT_ADMIN_USERNAME=${WEBUI_ADMIN_USER}
+      - DEFAULT_ADMIN_PASSWORD=${WEBUI_ADMIN_PASS}
+      - WEBUI_NAME=Local WebUI
+    volumes:
+      - ./openwebui:/app/backend/data
+    restart: unless-stopped
+
+  searxng:
+    image: searxng/searxng:latest
+    container_name: searxng
+    ports:
+      - "8080:8080"                   # http://localhost:8080
+    environment:
+      - SEARXNG_BASE_URL=http://localhost:8080/
+      - UWSGI_WORKERS=2
+    volumes:
+      - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
+    restart: unless-stopped
+
+networks:
+  default:
+    name: local-llm-net
+
