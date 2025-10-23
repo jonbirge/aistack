@@ -1,5 +1,11 @@
 # Models you want on the box
-MODELS := llama3.1:8b qwen2.5:7b
+MODELS := gemma3:12b \
+		  llama3.2-vision \
+		  phi4 \
+		  codellama \
+		  granite3.3 \
+		  gpt-oss \
+		  llama3.2
 
 # Use docker compose to talk to the running container
 OLLAMA := docker compose exec -T ollama ollama
