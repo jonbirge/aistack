@@ -22,19 +22,35 @@ services:
     image: ghcr.io/open-webui/open-webui:main
     container_name: openwebui
     depends_on:
-      - ollama
+      ollama:
+        condition: service_healthy
+      searxng:
+        condition: service_started
+      mcpo:
+        condition: service_started
     ports:
       - "3000:8080"                   # Web UI: http://localhost:3000
     environment:
-      - OLLAMA_BASE_URL=http://ollama:11434
-      - OPENAI_API_BASE=http://ollama:11434/v1
-      - OPENAI_API_KEY=dummy
+      # Authentication and user management
       - WEBUI_AUTH=false
       - ENABLE_SIGNUP=true
       - SINGLE_USER_MODE=true
       - DEFAULT_ADMIN_USERNAME=${WEBUI_ADMIN_USER}
       - DEFAULT_ADMIN_PASSWORD=${WEBUI_ADMIN_PASS}
       - WEBUI_NAME=Birge WebUI
+      # Ollama backend connection
+      - OLLAMA_BASE_URL=http://ollama:11434
+      - OPENAI_API_BASE=http://ollama:11434/v1
+      - OPENAI_API_KEY=dummy
+      # Make this the default visible model in the selector on first launch (optional)
+      - DEFAULT_MODELS=llama3.1:8b
+      # Tool servers: pre-register mcpo (the MCP→OpenAPI proxy) so it shows up in Tools
+      - ENABLE_DIRECT_CONNECTIONS=true
+      - TOOL_SERVER_CONNECTIONS=[{"name":"mcpo","url":"http://mcpo:8000"}]
+      # Optional: if you’ll use SearXNG via a tool/extension inside WebUI
+      - SEARXNG_URL=http://searxng:8080
+      # Uncomment to disable persistent config to reset to defaults
+      # - ENABLE_PERSISTENT_CONFIG=false
     volumes:
       - ./openwebui:/app/backend/data
     restart: unless-stopped
@@ -49,6 +65,9 @@ services:
       - UWSGI_WORKERS=2
     volumes:
       - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
+    command:
+      - --transport=sse
+      - --servers=duckduckgo
     restart: unless-stopped
 
 networks:

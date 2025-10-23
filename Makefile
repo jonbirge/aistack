@@ -32,4 +32,3 @@ prune:
 # Remove local model store (host path from your compose)
 clean:
 	rm -rf ./ollama/models ./ollama/manifests || true
-
