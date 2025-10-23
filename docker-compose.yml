@@ -41,9 +41,9 @@ services:
       - ENABLE_DIRECT_CONNECTIONS=true
       - TOOL_SERVER_CONNECTIONS=[{"url":"http://mcpo-time:8001","path":"/","auth_type":"none","key":"","config":{},"info":{"name":"mcpo-time","description":"MCP time via mcpo"}}]
       # Optional: if you’ll use SearXNG via a tool/extension inside WebUI
-      - SEARXNG_URL=http://searxng:8080
+      - SEARXNG_URL=http://searxng:8888
       # Uncomment to disable persistent config to reset to defaults
-      - ENABLE_PERSISTENT_CONFIG=false
+      # - ENABLE_PERSISTENT_CONFIG=false
     volumes:
       - ./openwebui:/app/backend/data
     restart: unless-stopped
@@ -52,9 +52,9 @@ services:
     image: searxng/searxng:latest
     container_name: searxng
     ports:
-      - "8888:8080"                   # map host 8888 -> container 8080 (was 8080:8080)
+      - "8080:8080"                   # map host 8888 -> container 8080 (was 8080:8080)
     environment:
-      - SEARXNG_BASE_URL=http://localhost:8888/
+      - SEARXNG_BASE_URL=http://localhost:8080/
       - UWSGI_WORKERS=2
     volumes:
       - ./config:/etc/searxng/        # persist config (matches: -v "./config/:/etc/searxng/")

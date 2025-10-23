@@ -4,8 +4,7 @@ MODELS := gemma3:12b \
 		  phi4 \
 		  codellama \
 		  granite3.3 \
-		  gpt-oss \
-		  llama3.2
+		  gpt-oss
 
 # Use docker compose to talk to the running container
 OLLAMA := docker compose exec -T ollama ollama
