@@ -39,11 +39,11 @@ services:
       - DEFAULT_MODELS=llama3.1:8b
       # Tool servers
       - ENABLE_DIRECT_CONNECTIONS=true
-      - TOOL_SERVER_CONNECTIONS=[{"name":"mcpo-time","url":"http://mcpo-time:8001"}]
+      - TOOL_SERVER_CONNECTIONS=[{"url":"http://mcpo-time:8001","path":"/","auth_type":"none","key":"","config":{},"info":{"name":"mcpo-time","description":"MCP time via mcpo"}}]
       # Optional: if you’ll use SearXNG via a tool/extension inside WebUI
       - SEARXNG_URL=http://searxng:8080
       # Uncomment to disable persistent config to reset to defaults
-      # - ENABLE_PERSISTENT_CONFIG=false
+      - ENABLE_PERSISTENT_CONFIG=false
     volumes:
       - ./openwebui:/app/backend/data
     restart: unless-stopped
@@ -64,6 +64,7 @@ services:
   # MCP services via mcpo
   mcpo-time:
     image: ghcr.io/open-webui/mcpo:main
+    container_name: mcpo-time
     command: ["mcpo","--host","0.0.0.0","--port","8001","--","uvx","mcp-server-time","--local-timezone=America/New_York"]
     restart: unless-stopped
 
