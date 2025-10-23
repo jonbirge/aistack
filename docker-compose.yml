@@ -2,10 +2,8 @@ services:
   ollama:
     image: ollama/ollama:latest
     container_name: ollama
-    ports:
-      - "11434:11434"                 # OpenAI-compatible API: http://localhost:11434/v1/...
     environment:
-      - OLLAMA_HOST=0.0.0.0
+      - OLLAMA_HOST=0.0.0.0:11434
       # The following two are optional when using `gpus: all`, but harmless:
       - NVIDIA_VISIBLE_DEVICES=all
       - NVIDIA_DRIVER_CAPABILITIES=compute,utility
@@ -41,7 +39,7 @@ services:
       - DEFAULT_MODELS=llama3.1:8b
       # Tool servers
       - ENABLE_DIRECT_CONNECTIONS=true
-      - TOOL_SERVER_CONNECTIONS=[{"name":"mcpo-time","url":"http://mcpo-time:8000"}]
+      - TOOL_SERVER_CONNECTIONS=[{"name":"mcpo-time","url":"http://mcpo-time:8001"}]
       # Optional: if you’ll use SearXNG via a tool/extension inside WebUI
       - SEARXNG_URL=http://searxng:8080
       # Uncomment to disable persistent config to reset to defaults
@@ -54,15 +52,13 @@ services:
     image: searxng/searxng:latest
     container_name: searxng
     ports:
-      - "8080:8080"                   # http://localhost:8080
+      - "8888:8080"                   # map host 8888 -> container 8080 (was 8080:8080)
     environment:
-      - SEARXNG_BASE_URL=http://localhost:8080/
+      - SEARXNG_BASE_URL=http://localhost:8888/
       - UWSGI_WORKERS=2
     volumes:
-      - ./searxng/settings.yml:/etc/searxng/settings.yml:ro
-    command:
-      - --transport=sse
-      - --servers=duckduckgo
+      - ./config:/etc/searxng/        # persist config (matches: -v "./config/:/etc/searxng/")
+      - ./data:/var/cache/searxng/    # persist cache/data (matches: -v "./data/:/var/cache/searxng/")
     restart: unless-stopped
 
   # MCP services via mcpo
@@ -71,6 +67,6 @@ services:
     command: ["mcpo","--host","0.0.0.0","--port","8001","--","uvx","mcp-server-time","--local-timezone=America/New_York"]
     restart: unless-stopped
 
-networks:
-  default:
-    name: local-llm-net
+# networks:
+#   default:
+#     name: local-llm-net
