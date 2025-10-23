@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
   ollama:
     image: ollama/ollama:latest
@@ -44,9 +42,9 @@ services:
       - OPENAI_API_KEY=dummy
       # Make this the default visible model in the selector on first launch (optional)
       - DEFAULT_MODELS=llama3.1:8b
-      # Tool servers: pre-register mcpo (the MCP→OpenAPI proxy) so it shows up in Tools
+      # Tool servers
       - ENABLE_DIRECT_CONNECTIONS=true
-      - TOOL_SERVER_CONNECTIONS=[{"name":"mcpo","url":"http://mcpo:8000"}]
+      - TOOL_SERVER_CONNECTIONS=[{"name":"mcpo-time","url":"http://mcpo-time:8000"}]
       # Optional: if you’ll use SearXNG via a tool/extension inside WebUI
       - SEARXNG_URL=http://searxng:8080
       # Uncomment to disable persistent config to reset to defaults
@@ -68,6 +66,12 @@ services:
     command:
       - --transport=sse
       - --servers=duckduckgo
+    restart: unless-stopped
+
+  # MCP services via mcpo
+  mcpo-time:
+    image: ghcr.io/open-webui/mcpo:main
+    command: ["mcpo","--host","0.0.0.0","--port","8001","--","uvx","mcp-server-time","--local-timezone=America/New_York"]
     restart: unless-stopped
 
 networks:
