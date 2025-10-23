@@ -20,12 +20,9 @@ services:
     image: ghcr.io/open-webui/open-webui:main
     container_name: openwebui
     depends_on:
-      ollama:
-        condition: service_healthy
-      searxng:
-        condition: service_started
-      mcpo:
-        condition: service_started
+      - ollama
+      - searxng
+      - mcpo-time
     ports:
       - "3000:8080"                   # Web UI: http://localhost:3000
     environment:

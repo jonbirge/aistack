@@ -14,4 +14,3 @@ ui:
 search:
   safe_search: 1
   autocomplete: "duckduckgo"
-
