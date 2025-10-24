@@ -20,7 +20,7 @@ services:
     depends_on:
       - ollama
       - searxng
-      - mcpo-time
+      - mcp-time
     ports:
       - "3000:8080"                   # Web UI: http://localhost:3000
     environment:
@@ -39,11 +39,21 @@ services:
       - DEFAULT_MODELS=llama3.1:8b
       # Tool servers
       - ENABLE_DIRECT_CONNECTIONS=true
-      - TOOL_SERVER_CONNECTIONS=[{"url":"http://mcpo-time:8001","path":"/","auth_type":"none","key":"","config":{},"info":{"name":"mcpo-time","description":"MCP time via mcpo"}}]
-      # Optional: if you’ll use SearXNG via a tool/extension inside WebUI
-      - SEARXNG_URL=http://searxng:8888
-      # Uncomment to disable persistent config to reset to defaults
-      # - ENABLE_PERSISTENT_CONFIG=false
+      - TOOL_SERVER_CONNECTIONS=[
+          {
+            "url":"http://mcpo-time:8001",
+            "path":"/openapi.json",
+            "auth_type":"none",
+            "info":{
+              "name":"mcp-time",
+              "description":"MCP time server via mcpo"
+            }
+          }
+        ]
+      # SearXNG via a tool/extension inside WebUI
+      - SEARXNG_URL=http://searxng:8080
+      # Set to false to disable persistent config to reset to defaults
+      - ENABLE_PERSISTENT_CONFIG=true
     volumes:
       - ./openwebui:/app/backend/data
     restart: unless-stopped
@@ -52,7 +62,7 @@ services:
     image: searxng/searxng:latest
     container_name: searxng
     ports:
-      - "8080:8080"                   # map host 8888 -> container 8080 (was 8080:8080)
+      - "8080:8080"                   # SearXNG web interface: http://localhost:8080
     environment:
       - SEARXNG_BASE_URL=http://localhost:8080/
       - UWSGI_WORKERS=2
@@ -62,10 +72,16 @@ services:
     restart: unless-stopped
 
   # MCP services via mcpo
-  mcpo-time:
+  mcp-time:
     image: ghcr.io/open-webui/mcpo:main
-    container_name: mcpo-time
-    command: ["mcpo","--host","0.0.0.0","--port","8001","--","uvx","mcp-server-time","--local-timezone=America/New_York"]
+    container_name: mcpo-time                # MCP time server
+    command: [
+      "mcpo","--host","0.0.0.0",
+      "--port","8001",
+      "--",
+      "uvx","mcp-server-time",
+      "--local-timezone=America/New_York"
+    ]
     restart: unless-stopped
 
 # networks:
